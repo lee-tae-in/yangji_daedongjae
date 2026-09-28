@@ -163,15 +163,88 @@
       100% { transform: scale(14);   opacity: 0; }
     }
 
-    /* 3단계: 흰 배경 걷히면서 본문 등장 */
+    /* 3단계: 배경 걷히면서 본문 등장 */
     #loader.zoom { animation: bg-out 0.45s ease 0.45s forwards; }
     @keyframes bg-out {
-      to { background-color: rgba(255, 255, 255, 0); }
+      to { background-color: rgba(255, 228, 236, 0); }
     }
     #loader.hide { visibility: hidden; }
 
     @media (prefers-reduced-motion: reduce) {
       #loader * { animation-duration: 0.01s !important; animation-delay: 0s !important; }
+    }
+    /* ===== 지도 클릭 시 상세지도 (전체화면) ===== */
+    .content img.map-thumb { cursor: zoom-in; }
+
+    /* 지도 + 바로 아래 버튼 (폭 = 지도 폭) */
+    .map-wrap {
+      width: 100%;
+      margin-top: 50px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+    .map-wrap img.map-thumb {
+      margin-top: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .map-btn {
+      display: block;
+      width: 100%;
+      padding: 14px 0;
+      border: none;
+      background: #ff8fb3;
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 17px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+    .map-btn:hover { background: #ff79a5; }
+    #mapModal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;      /* 상하 중앙 */
+      justify-content: center;  /* 좌우 중앙 */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      cursor: zoom-out;
+    }
+    #mapModal.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    #mapModal img {
+      display: block;
+      max-width: 100vw;         /* 비율 유지하며 화면에 꽉 차게 */
+      max-height: 100vh;
+      max-height: 100dvh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      transform: scale(0.92);
+      transition: transform 0.3s ease;
+    }
+    #mapModal.open img { transform: scale(1); }
+    #mapModal .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.9);
+      color: #222;
+      font-size: 26px;
+      line-height: 44px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -194,7 +267,10 @@
       <img class="title" src="제목.png" alt="제목">
       <img src="1일차.png" alt="1일차">
       <img src="2일차.png" alt="2일차">
-      <img src="지도.jpg" alt="지도">
+      <div class="map-wrap">
+        <img class="map-thumb" id="mapThumb" src="지도.jpg" alt="지도 (누르면 크게 보기)">
+        <button class="map-btn" id="mapBtn" type="button">상세지도 보기</button>
+      </div>
       <img class="logo" src="로고.png" alt="학교 로고">
     </main>
   </div>
@@ -299,6 +375,26 @@
 
       window.addEventListener("load", () => { pageLoaded = true; tryFinish(); });
       setTimeout(finish, MAX_WAIT);
+    })();
+  </script>
+
+  <!-- 상세지도 (지도 누르면 뜸) -->
+  <div id="mapModal" role="dialog" aria-modal="true" aria-label="상세지도">
+    <button class="close-btn" type="button" aria-label="닫기">×</button>
+    <img src="상세지도.png" alt="상세지도">   <!-- 상세지도 파일 따로 있으면 여기 파일명만 바꾸면 돼요 -->
+  </div>
+
+  <script>
+    // 지도 누르면 상세지도 열기 / 아무 데나 누르거나 ESC 누르면 닫기
+    (function () {
+      const thumb = document.getElementById("mapThumb");
+      const modal = document.getElementById("mapModal");
+      function openMap()  { modal.classList.add("open");    document.body.style.overflow = "hidden"; }
+      function closeMap() { modal.classList.remove("open"); document.body.style.overflow = ""; }
+      thumb.addEventListener("click", openMap);
+      document.getElementById("mapBtn").addEventListener("click", openMap);
+      modal.addEventListener("click", closeMap);
+      document.addEventListener("keydown", e => { if (e.key === "Escape") closeMap(); });
     })();
   </script>
 
