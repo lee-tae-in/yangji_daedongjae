@@ -104,65 +104,74 @@
       margin-top: auto;        /* 배경 맨 아래쪽으로 붙이기 */
       margin-bottom: 40px;     /* 배경 아래 끝과의 간격 */
     }
-    /* ===== 로딩 화면 ===== */
+    /* ===== 로딩 화면 (백야 × 연성대) ===== */
     #loader {
       position: fixed;
       inset: 0;
       z-index: 9999;
       background-color: #ffe4ec;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 20px;
-      transition: opacity 0.6s ease, visibility 0.6s ease;
+      overflow: hidden;
     }
-    #loader.hide {
-      opacity: 0;
-      visibility: hidden;
-    }
-    .loader-dots {
+    .collab {
       display: flex;
-      gap: 12px;
+      flex-direction: column;   /* 위아래 배치 */
+      align-items: center;
+      gap: 3vh;
+      padding: 0 16px;
     }
-    .loader-dots span {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background-color: #ff8fb3;
-      animation: loader-bounce 0.9s ease-in-out infinite;
+    .collab img {
+      display: block;
+      height: auto;
+      opacity: 0;
     }
-    .loader-dots span:nth-child(2) { animation-delay: 0.15s; }
-    .loader-dots span:nth-child(3) { animation-delay: 0.3s; }
-    @keyframes loader-bounce {
-      0%, 100% { transform: translateY(0);     opacity: 0.6; }
-      50%      { transform: translateY(-14px); opacity: 1;   }
-    }
-    .loader-text {
+    .collab .logo-top    { width: min(52vw, 250px); }   /* 백야 (위) */
+    .collab .logo-bottom { width: min(63vw, 302px); }   /* 연성대 (아래) — 두 로고 높이 같게 */
+    .collab .x {
       font-family: sans-serif;
-      font-size: 28px;
-      font-weight: bold;
-      letter-spacing: 6px;
-      color: #ff6f9f;
-      display: flex;
-    }
-    /* 한 글자씩 튀어나오기 (2.5초마다 반복) */
-    .loader-text span {
-      display: inline-block;
+      font-size: min(8vw, 44px);
+      font-weight: 900;
+      color: #222;
       opacity: 0;
-      animation: loader-char 2.5s ease-out infinite both;
+      line-height: 1;
     }
-    .loader-text span:nth-child(1) { animation-delay: 0s;   }
-    .loader-text span:nth-child(2) { animation-delay: 0.2s; }
-    .loader-text span:nth-child(3) { animation-delay: 0.4s; }
-    .loader-text span:nth-child(4) { animation-delay: 0.6s; }
-    .loader-text span:nth-child(5) { animation-delay: 0.8s; }
-    @keyframes loader-char {
-      0%   { opacity: 0; transform: translateY(12px) scale(0.6); }
-      12%  { opacity: 1; transform: translateY(-4px) scale(1.1); }
-      20%  { opacity: 1; transform: translateY(0)    scale(1);   }
-      70%  { opacity: 1; transform: translateY(0)    scale(1);   }
-      85%, 100% { opacity: 0; transform: translateY(0) scale(1); }
+
+    /* 1단계: 위아래에서 날아와서 가운데로 */
+    #loader.enter .logo-top    { animation: fly-top    0.7s cubic-bezier(.2,.9,.3,1.15) forwards; }
+    #loader.enter .logo-bottom { animation: fly-bottom 0.7s cubic-bezier(.2,.9,.3,1.15) forwards; }
+    #loader.enter .x           { animation: pop-x 0.5s cubic-bezier(.3,1.6,.5,1) 0.55s forwards; }
+    @keyframes fly-top {
+      from { opacity: 0; transform: translateY(-60vh) rotate(-8deg); }
+      to   { opacity: 1; transform: translateY(0)     rotate(0deg);  }
+    }
+    @keyframes fly-bottom {
+      from { opacity: 0; transform: translateY(60vh) rotate(8deg); }
+      to   { opacity: 1; transform: translateY(0)    rotate(0deg); }
+    }
+    @keyframes pop-x {
+      0%   { opacity: 0; transform: scale(0) rotate(-90deg); }
+      100% { opacity: 1; transform: scale(1) rotate(0deg);   }
+    }
+
+    /* 2단계: 살짝 움츠렸다가 화면 안으로 확 확대되며 사라짐 */
+    #loader.zoom .collab { animation: zoom-in 0.75s cubic-bezier(.6,0,.9,.4) forwards; }
+    @keyframes zoom-in {
+      0%   { transform: scale(1);    opacity: 1; }
+      25%  { transform: scale(0.88); opacity: 1; }
+      100% { transform: scale(14);   opacity: 0; }
+    }
+
+    /* 3단계: 흰 배경 걷히면서 본문 등장 */
+    #loader.zoom { animation: bg-out 0.45s ease 0.45s forwards; }
+    @keyframes bg-out {
+      to { background-color: rgba(255, 255, 255, 0); }
+    }
+    #loader.hide { visibility: hidden; }
+
+    @media (prefers-reduced-motion: reduce) {
+      #loader * { animation-duration: 0.01s !important; animation-delay: 0s !important; }
     }
   </style>
 </head>
@@ -170,8 +179,11 @@
 
   <!-- 로딩 화면 -->
   <div id="loader">
-    <div class="loader-dots"><span></span><span></span><span></span></div>
-    <p class="loader-text"><span>양</span><span>지</span><span>대</span><span>동</span><span>제</span></p>
+    <div class="collab">
+      <img class="logo-top"    src="백야.png" alt="백야 총학생회">
+      <span class="x">×</span>
+      <img class="logo-bottom" src="연성대.png" alt="연성대학교">
+    </div>
   </div>
 
   <div class="stage" id="stage">
@@ -190,11 +202,11 @@
   <script>
     // ===== 여기 숫자만 바꾸면 돼요 =====
     const BG_IMAGE = "배경.png";   // 배경 이미지 파일명 (CSS의 url("배경.png")도 같이 바꿔주세요)
-    const COUNT = 30;              // 떨어지는 오브젝트 개수
+    const COUNT = 50;              // 떨어지는 오브젝트 개수
     const MIN_SIZE = 40;           // 최소 크기 (px)
     const MAX_SIZE = 80;           // 최대 크기 (px)
-    const MIN_SPEED = 7;           // 가장 빠른 낙하 시간 (초)
-    const MAX_SPEED = 12;          // 가장 느린 낙하 시간 (초)
+    const MIN_SPEED = 6;           // 가장 빠른 낙하 시간 (초)
+    const MAX_SPEED = 13;          // 가장 느린 낙하 시간 (초)
     const IMAGES = [
       "씨디.png",
       "별.png",
@@ -259,19 +271,34 @@
   </script>
 
   <script>
-    // 로딩 화면: 이미지 전부 불러오면 사라짐 (최소 1.5초 표시 — 글자 다 뜰 때까지, 최대 8초 후엔 무조건 사라짐)
+    // 로딩 화면: 로고 등장 → (페이지 다 불러오면) 확대되며 사라짐. 최대 8초 후엔 무조건 사라짐
     (function () {
+      const HOLD_TIME = 1700;   // 로고 모인 뒤 확대 시작까지 최소 시간 (밀리초)
+      const ZOOM_TIME = 900;    // 확대 + 배경 사라지는 시간
+      const MAX_WAIT  = 8000;
+
       const loader = document.getElementById("loader");
-      const start = Date.now();
-      let done = false;
-      function hideLoader() {
-        if (done) return;
-        done = true;
-        const wait = Math.max(0, 1500 - (Date.now() - start));
-        setTimeout(() => loader.classList.add("hide"), wait);
+      const logos = [...loader.querySelectorAll("img")];
+      let pageLoaded = false, holdDone = false, finished = false;
+
+      function finish() {
+        if (finished) return;
+        finished = true;
+        loader.classList.add("enter", "zoom");
+        setTimeout(() => loader.classList.add("hide"), ZOOM_TIME);
       }
-      window.addEventListener("load", hideLoader);
-      setTimeout(hideLoader, 8000);
+      function tryFinish() { if (pageLoaded && holdDone) finish(); }
+
+      // 로고 이미지 준비되면 등장 시작
+      Promise.all(logos.map(img =>
+        img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = r; })
+      )).then(() => {
+        loader.classList.add("enter");
+        setTimeout(() => { holdDone = true; tryFinish(); }, HOLD_TIME);
+      });
+
+      window.addEventListener("load", () => { pageLoaded = true; tryFinish(); });
+      setTimeout(finish, MAX_WAIT);
     })();
   </script>
 
