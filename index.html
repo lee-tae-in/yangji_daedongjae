@@ -70,9 +70,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 40px;
-      padding: 100px 50px;      /* 양옆 마진 20px */
+      justify-content: flex-start;  /* 위에서부터 쌓기 (제목이 맨 위) */
+      gap: 60px;
+      padding: 0px 50px;      /* 양옆 마진 20px */
     }
 
     /* 본문 사진 */
@@ -82,19 +82,106 @@
       height: auto;
       border-radius: 12px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      margin-top: 50px;
+    }
+
+    /* 상단 제목 이미지 */
+    .content img.title {
+      width: auto;
+      max-width: 100%;         /* 원본 크기, 화면이 좁으면 줄어듦 */
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    /* 하단 학교 로고 */
+    .content img.logo {
+      width: 300px;            /* 로고 크기 — 여기 숫자 바꾸면 돼요 */
+      max-width: 100%;
+      border-radius: 0;
+      box-shadow: none;
+      margin-top: auto;        /* 배경 맨 아래쪽으로 붙이기 */
+      margin-bottom: 40px;     /* 배경 아래 끝과의 간격 */
+    }
+    /* ===== 로딩 화면 ===== */
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background-color: #ffe4ec;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    #loader.hide {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .loader-dots {
+      display: flex;
+      gap: 12px;
+    }
+    .loader-dots span {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: #ff8fb3;
+      animation: loader-bounce 0.9s ease-in-out infinite;
+    }
+    .loader-dots span:nth-child(2) { animation-delay: 0.15s; }
+    .loader-dots span:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes loader-bounce {
+      0%, 100% { transform: translateY(0);     opacity: 0.6; }
+      50%      { transform: translateY(-14px); opacity: 1;   }
+    }
+    .loader-text {
+      font-family: sans-serif;
+      font-size: 28px;
+      font-weight: bold;
+      letter-spacing: 6px;
+      color: #ff6f9f;
+      display: flex;
+    }
+    /* 한 글자씩 튀어나오기 (2.5초마다 반복) */
+    .loader-text span {
+      display: inline-block;
+      opacity: 0;
+      animation: loader-char 2.5s ease-out infinite both;
+    }
+    .loader-text span:nth-child(1) { animation-delay: 0s;   }
+    .loader-text span:nth-child(2) { animation-delay: 0.2s; }
+    .loader-text span:nth-child(3) { animation-delay: 0.4s; }
+    .loader-text span:nth-child(4) { animation-delay: 0.6s; }
+    .loader-text span:nth-child(5) { animation-delay: 0.8s; }
+    @keyframes loader-char {
+      0%   { opacity: 0; transform: translateY(12px) scale(0.6); }
+      12%  { opacity: 1; transform: translateY(-4px) scale(1.1); }
+      20%  { opacity: 1; transform: translateY(0)    scale(1);   }
+      70%  { opacity: 1; transform: translateY(0)    scale(1);   }
+      85%, 100% { opacity: 0; transform: translateY(0) scale(1); }
     }
   </style>
 </head>
 <body>
+
+  <!-- 로딩 화면 -->
+  <div id="loader">
+    <div class="loader-dots"><span></span><span></span><span></span></div>
+    <p class="loader-text"><span>양</span><span>지</span><span>대</span><span>동</span><span>제</span></p>
+  </div>
 
   <div class="stage" id="stage">
     <div class="falling-bg" id="fallingBg"></div>
 
     <!-- 본문 내용 여기에 -->
     <main class="content">
+      <img class="title" src="제목.png" alt="제목">
       <img src="1일차.png" alt="1일차">
       <img src="2일차.png" alt="2일차">
       <img src="지도.jpg" alt="지도">
+      <img class="logo" src="로고.png" alt="학교 로고">
     </main>
   </div>
 
@@ -105,7 +192,7 @@
     const MIN_SIZE = 40;           // 최소 크기 (px)
     const MAX_SIZE = 80;           // 최대 크기 (px)
     const MIN_SPEED = 7;           // 가장 빠른 낙하 시간 (초)
-    const MAX_SPEED = 15;          // 가장 느린 낙하 시간 (초)
+    const MAX_SPEED = 12;          // 가장 느린 낙하 시간 (초)
     const IMAGES = [
       "씨디.png",
       "별.png",
@@ -161,6 +248,23 @@
 
       bg.appendChild(item);
     }
+  </script>
+
+  <script>
+    // 로딩 화면: 이미지 전부 불러오면 사라짐 (최소 1.5초 표시 — 글자 다 뜰 때까지, 최대 8초 후엔 무조건 사라짐)
+    (function () {
+      const loader = document.getElementById("loader");
+      const start = Date.now();
+      let done = false;
+      function hideLoader() {
+        if (done) return;
+        done = true;
+        const wait = Math.max(0, 1500 - (Date.now() - start));
+        setTimeout(() => loader.classList.add("hide"), wait);
+      }
+      window.addEventListener("load", hideLoader);
+      setTimeout(hideLoader, 8000);
+    })();
   </script>
 
 </body>
