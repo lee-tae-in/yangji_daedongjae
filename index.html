@@ -24,6 +24,8 @@
       background-size: 100% 100%;
       background-repeat: no-repeat;
       overflow: hidden;        /* 오브젝트가 이미지 밖으로 안 나감 */
+      display: flex;           /* 내용이 길면 배경도 같이 늘어남 */
+      flex-direction: column;
     }
 
     /* ===== 떨어지는 오브젝트 ===== */
@@ -66,7 +68,7 @@
       position: relative;
       z-index: 1;
       width: 100%;
-      height: 100%;
+      flex: 1;                 /* 배경 높이만큼 채우기 (로고가 맨 아래로 가도록) */
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -209,11 +211,17 @@
 
     // 1) 배경 이미지 원본 크기를 읽어서 무대 크기를 똑같이 맞춤
     const bgImg = new Image();
+    // (최소 높이 = 배경 이미지 비율, 내용이 더 길면 그만큼 늘어남)
+    function fitStage() {
+      if (!bgImg.naturalWidth) return;
+      stage.style.minHeight = stage.offsetWidth * bgImg.naturalHeight / bgImg.naturalWidth + "px";
+    }
     bgImg.onload = () => {
       stage.style.maxWidth = bgImg.naturalWidth + "px";
-      stage.style.aspectRatio = bgImg.naturalWidth + " / " + bgImg.naturalHeight;
+      fitStage();
       updateHeight();
     };
+    window.addEventListener("resize", fitStage);
     bgImg.src = BG_IMAGE;
 
     // 2) 무대 높이를 애니메이션에 전달 (창 크기 바뀌면 자동 갱신)
