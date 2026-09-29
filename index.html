@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="is-loading">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -104,6 +104,13 @@
       margin-top: auto;        /* 배경 맨 아래쪽으로 붙이기 */
       margin-bottom: 40px;     /* 배경 아래 끝과의 간격 */
     }
+    /* ===== 로딩 중에는 스크롤 잠금 ===== */
+    html.is-loading,
+    html.is-loading body {
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
     /* ===== 로딩 화면 (백야 × 연성대) ===== */
     #loader {
       position: fixed;
@@ -114,6 +121,7 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      touch-action: none;       /* 로딩 화면 위에서 손가락 스크롤 막기 */
     }
     .collab {
       display: flex;
@@ -246,6 +254,172 @@
       line-height: 44px;
       cursor: pointer;
     }
+    /* ===== NOW / NEXT 배너 ===== */
+    .now-banner {
+      width: 100%;
+      margin-top: 10px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      font-family: sans-serif;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .now-banner .row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      line-height: 1.35;
+    }
+    .now-banner .tag {
+      flex-shrink: 0;
+      min-width: 52px;
+      padding: 3px 0;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-align: center;
+      color: #fff;
+      background: #ff5c93;
+    }
+    .now-banner .tag.next { background: #9aa0a6; }
+    .now-banner .tag.dday { background: #7cc96b; }
+    .now-banner .what { font-size: 16px; font-weight: bold; }
+    .now-banner .when { margin-left: auto; font-size: 13px; color: #ff5c93; font-weight: bold; white-space: nowrap; }
+    .now-banner .dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      margin-right: 5px;
+      border-radius: 50%;
+      background: #fff;
+      animation: live-blink 1.2s ease-in-out infinite;
+      vertical-align: 1px;
+    }
+    @keyframes live-blink { 50% { opacity: 0.2; } }
+
+    /* ===== 일차 카드 + TODAY 배지 ===== */
+    .day-wrap {
+      position: relative;
+      width: 100%;
+      margin-top: 50px;
+      scroll-margin-top: 30px;
+    }
+    .day-wrap img { margin-top: 0 !important; }
+    .today-badge {
+      display: none;
+      position: absolute;
+      top: -14px;
+      right: -10px;
+      z-index: 2;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: #ff5c93;
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      box-shadow: 0 3px 10px rgba(255, 92, 147, 0.45);
+      transform: rotate(8deg);
+      animation: badge-bounce 1.6s ease-in-out infinite;
+    }
+    .day-wrap.today .today-badge { display: block; }
+    .day-wrap.today img { box-shadow: 0 0 0 4px #ff5c93, 0 6px 20px rgba(255, 92, 147, 0.35) !important; }
+    @keyframes badge-bounce {
+      0%, 100% { transform: rotate(8deg) translateY(0); }
+      50%      { transform: rotate(8deg) translateY(-5px); }
+    }
+
+    /* ===== 맨 위로 버튼 ===== */
+    #toTop {
+      position: fixed;
+      right: 16px;
+      bottom: 20px;
+      z-index: 50;
+      width: 48px;
+      height: 48px;
+      border: none;
+      border-radius: 50%;
+      background: #ff8fb3;
+      color: #fff;
+      font-size: 22px;
+      font-weight: bold;
+      line-height: 48px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
+      transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    }
+    #toTop.show { opacity: 1; visibility: visible; transform: translateY(0); }
+    #toTop:hover { background: #ff79a5; }
+
+    /* ===== 하단 고정 푸터 (인스타 이벤트) ===== */
+    :root { --footer-h: 64px; }
+    body { padding-bottom: calc(var(--footer-h) + env(safe-area-inset-bottom)); }  /* 푸터에 내용 안 가리게 */
+    .site-footer {
+      position: fixed;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      z-index: 60;
+      width: 100%;
+      max-width: 660px;         /* 배경 폭과 동일 */
+      height: calc(var(--footer-h) + env(safe-area-inset-bottom));
+      padding: 0 16px env(safe-area-inset-bottom);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      border-top: 2px solid #ff8fb3;
+      border-radius: 18px 18px 0 0;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+      font-family: sans-serif;
+      text-decoration: none;
+      color: #333;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+    }
+    .site-footer .footer-logo {
+      flex-shrink: 0;
+      display: block;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+    }
+    .site-footer .footer-logo img { width: 100%; height: 100%; display: block; }
+    .site-footer .footer-text {
+      flex: 1;
+      font-size: clamp(13px, 3.8vw, 15px);
+      font-weight: bold;
+      line-height: 1.3;
+      word-break: keep-all;     /* 한글 단어 중간에서 안 끊기게 */
+      color: #333;
+      text-decoration: none;
+    }
+    .site-footer .footer-text b { color: #ff5c93; }
+    .site-footer .footer-arrow:hover { background: #ff3f80; }
+    .site-footer .footer-arrow {
+      flex-shrink: 0;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: #ff5c93;
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+      text-decoration: none;
+      white-space: nowrap;
+      animation: footer-pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes footer-pulse { 50% { transform: scale(1.07); } }
+    /* 맨 위로 버튼은 푸터 위로 */
+    #toTop { bottom: calc(var(--footer-h) + env(safe-area-inset-bottom) + 14px); }
   </style>
 </head>
 <body>
@@ -265,8 +439,18 @@
     <!-- 본문 내용 여기에 -->
     <main class="content">
       <img class="title" src="제목.png" alt="제목">
-      <img src="1일차.png" alt="1일차">
-      <img src="2일차.png" alt="2일차">
+
+      <!-- 지금 / 다음 행사 (시간 따라 자동으로 바뀜) -->
+      <div class="now-banner" id="nowBanner" aria-live="polite"></div>
+
+      <div class="day-wrap" id="day1" data-date="2026-10-15">
+        <span class="today-badge">TODAY</span>
+        <img src="1일차.png" alt="1일차 일정">
+      </div>
+      <div class="day-wrap" id="day2" data-date="2026-10-16">
+        <span class="today-badge">TODAY</span>
+        <img src="2일차.png" alt="2일차 일정">
+      </div>
       <div class="map-wrap">
         <img class="map-thumb" id="mapThumb" src="지도.png" alt="지도 (누르면 크게 보기)">
         <button class="map-btn" id="mapBtn" type="button">상세지도 보기</button>
@@ -355,13 +539,26 @@
 
       const loader = document.getElementById("loader");
       const logos = [...loader.querySelectorAll("img")];
+
+      // 로딩 중 스크롤 잠금 (새로고침해도 항상 맨 위에서 시작)
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+      window.scrollTo(0, 0);
+      const blockScroll = e => e.preventDefault();
+      window.addEventListener("touchmove", blockScroll, { passive: false });
+      window.addEventListener("wheel", blockScroll, { passive: false });
+      function unlockScroll() {
+        document.documentElement.classList.remove("is-loading");
+        window.removeEventListener("touchmove", blockScroll);
+        window.removeEventListener("wheel", blockScroll);
+        window.dispatchEvent(new Event("loaderdone"));   // 로딩 끝났다고 알림
+      }
       let pageLoaded = false, holdDone = false, finished = false;
 
       function finish() {
         if (finished) return;
         finished = true;
         loader.classList.add("enter", "zoom");
-        setTimeout(() => loader.classList.add("hide"), ZOOM_TIME);
+        setTimeout(() => { loader.classList.add("hide"); unlockScroll(); }, ZOOM_TIME);
       }
       function tryFinish() { if (pageLoaded && holdDone) finish(); }
 
@@ -395,6 +592,106 @@
       document.getElementById("mapBtn").addEventListener("click", openMap);
       modal.addEventListener("click", closeMap);
       document.addEventListener("keydown", e => { if (e.key === "Escape") closeMap(); });
+    })();
+  </script>
+
+  <!-- 하단 고정 푸터 — 링크는 INSTA_URL 한 군데만 바꾸면 돼요 -->
+  <footer class="site-footer">
+    <span class="footer-logo">
+      <img src="백야아이콘.png" alt="백야">
+    </span>
+    <p class="footer-text">총학생회 인스타 <br><b>댓글 이벤트</b> 참여!</p>
+    <a class="footer-arrow js-insta" href="#" target="_blank" rel="noopener">참여하기 →</a>
+  </footer>
+  <script>
+    const INSTA_URL = "https://www.instagram.com/";   // ← 여기에 총학생회 인스타(이벤트 게시물) 링크 넣기
+    document.querySelectorAll(".js-insta").forEach(a => a.href = INSTA_URL);
+  </script>
+
+  <!-- 맨 위로 버튼 -->
+  <button id="toTop" type="button" aria-label="맨 위로">↑</button>
+
+  <script>
+    // ===== 축제 일정 (시간 바뀌면 여기만 고치면 돼요) =====
+    const SCHEDULE = [
+      { date: "2026-10-15", start: "10:30", end: "22:00", title: "학과부스 · 푸드트럭 운영", booth: true },
+      { date: "2026-10-15", start: "18:00", end: "20:20", title: "동아리 · 학과 공연" },
+      { date: "2026-10-15", start: "20:20", end: "22:00", title: "아티스트 공연" },
+      { date: "2026-10-16", start: "10:30", end: "22:00", title: "학과부스 · 푸드트럭 운영", booth: true },
+      { date: "2026-10-16", start: "18:00", end: "20:00", title: "연성 가요대전 : PLAY YOUR VOICE" },
+      { date: "2026-10-16", start: "20:00", end: "21:30", title: "아티스트 공연" },
+      { date: "2026-10-16", start: "21:30", end: "22:00", title: "디제이 공연 : PLAY Y2K" }
+    ];
+    // =====================================================
+
+    (function () {
+      // 테스트용: 주소 끝에 ?now=2026-10-16T20:30 붙이면 그 시간인 것처럼 보여줌
+      const testNow = new URLSearchParams(location.search).get("now");
+      const getNow = () => testNow ? new Date(testNow + "+09:00") : new Date();
+
+      const kst = (date, time) => new Date(date + "T" + time + ":00+09:00");
+      const events = SCHEDULE.map(e => ({ ...e, s: kst(e.date, e.start), e: kst(e.date, e.end) }));
+      const DAY_NAMES = ["일", "월", "화", "수", "목", "금", "토"];
+      const todayKST = now => new Date(now.getTime() + 9 * 3600e3).toISOString().slice(0, 10);
+      const dayLabel = date => { const d = new Date(date + "T12:00:00+09:00");
+        return (d.getUTCMonth() + 1) + "/" + d.getUTCDate() + "(" + DAY_NAMES[d.getUTCDay()] + ")"; };
+
+      const banner = document.getElementById("nowBanner");
+      const row = (tag, cls, what, when) =>
+        '<div class="row"><span class="tag ' + cls + '">' + tag + '</span>' +
+        '<span class="what">' + what + '</span>' + (when ? '<span class="when">' + when + '</span>' : '') + '</div>';
+
+      function render() {
+        const now = getNow();
+        const first = events[0], last = events[events.length - 1];
+        let html = "";
+
+        if (now < kst(first.date, "00:00")) {
+          // 축제 전: D-day
+          const days = Math.ceil((kst(first.date, "00:00") - now) / 86400e3);
+          html = row("D-" + days, "dday", "양지대동제 개막까지", dayLabel(first.date) + " " + first.start);
+        } else if (now >= last.e) {
+          html = row("END", "next", "양지대동제가 끝났어요. 함께해서 고마워요!", "");
+        } else {
+          const live  = events.filter(e => now >= e.s && now < e.e);
+          const stage = live.filter(e => !e.booth);
+          const shown = stage.length ? stage : live;
+          shown.forEach(e => {
+            html += row('<span class="dot"></span>NOW', "", e.title, "~ " + e.end);
+          });
+          // 다음 일정: 부스가 이미 열려 있으면 공연 위주로, 아니면 가장 빠른 일정
+          const upcoming = events.filter(e => e.s > now);
+          const boothOpen = live.some(e => e.booth);
+          const next = (boothOpen ? upcoming.filter(e => !e.booth)[0] : null) || upcoming[0];
+          if (next) {
+            const when = (next.date === todayKST(now) ? "" : dayLabel(next.date) + " ") + next.start;
+            html += row("NEXT", "next", next.title, when);
+          }
+          if (!html) html = row("TODAY", "dday", "오늘 일정이 모두 끝났어요", "");
+        }
+        banner.innerHTML = html;
+
+        // 오늘 날짜 카드에 TODAY 표시
+        const today = todayKST(now);
+        document.querySelectorAll(".day-wrap").forEach(d =>
+          d.classList.toggle("today", d.dataset.date === today));
+      }
+
+      render();
+      setInterval(render, 30000);   // 30초마다 갱신
+
+      // 축제 당일이면 로딩 끝난 뒤 오늘 카드로 자동 스크롤
+      window.addEventListener("loaderdone", () => {
+        const card = document.querySelector(".day-wrap.today");
+        if (card && window.scrollY < 50) card.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, { once: true });
+
+      // 맨 위로 버튼
+      const toTop = document.getElementById("toTop");
+      const onScroll = () => toTop.classList.toggle("show", window.scrollY > 500);
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+      toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
     })();
   </script>
 
