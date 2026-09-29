@@ -617,10 +617,10 @@
       { date: "2026-10-15", start: "10:30", end: "22:00", title: "학과부스 · 푸드트럭 운영", booth: true },
       { date: "2026-10-15", start: "18:00", end: "20:20", title: "동아리 · 학과 공연" },
       { date: "2026-10-15", start: "20:20", end: "22:00", title: "아티스트 공연" },
-      { date: "2026-10-16", start: "10:30", end: "22:00", title: "학과부스 · 푸드트럭 운영", booth: true },
-      { date: "2026-10-16", start: "18:00", end: "20:00", title: "연성 가요대전 : PLAY YOUR VOICE" },
+      { date: "2026-10-16", start: "10:30", end: "22:00", title: "학과부스&<br>푸드트럭 운영", booth: true },
+      { date: "2026-10-16", start: "18:00", end: "20:00", title: "연성 가요대전 : <br>PLAY YOUR VOICE" },
       { date: "2026-10-16", start: "20:00", end: "21:30", title: "아티스트 공연" },
-      { date: "2026-10-16", start: "21:30", end: "22:00", title: "디제이 공연 : PLAY Y2K" }
+      { date: "2026-10-16", start: "21:30", end: "22:00", title: "디제이 공연 : <br>PLAY Y2K" }
     ];
     // =====================================================
 
@@ -649,9 +649,9 @@
         if (now < kst(first.date, "00:00")) {
           // 축제 전: D-day
           const days = Math.ceil((kst(first.date, "00:00") - now) / 86400e3);
-          html = row("D-" + days, "dday", "양지대동제 개막까지", dayLabel(first.date) + " " + first.start);
+          html = row("D-" + days, "dday", "양지대동제 <br>개막까지", dayLabel(first.date) + " " + first.start);
         } else if (now >= last.e) {
-          html = row("END", "next", "양지대동제가 끝났어요. 함께해서 고마워요!", "");
+          html = row("END", "next", "양지대동제가 끝났어요. <br>함께해서 고마워요!", "");
         } else {
           const live  = events.filter(e => now >= e.s && now < e.e);
           const stage = live.filter(e => !e.booth);
