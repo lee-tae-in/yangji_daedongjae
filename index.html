@@ -857,7 +857,7 @@
           const days = Math.ceil((kst(first.date, "00:00") - now) / 86400e3);
           html = row("D-" + days, "dday", "양지대동제 <br>개막까지", dayLabel(first.date) + " " + first.start);
         } else if (now >= last.e) {
-          html = row("END", "next", "양지대동제가 끝났어요. <br>함께해서 고마워요!", "");
+          html = row("END", "next", "양지대동제가 끝났어요. <br>함께해줘서 고마워요!", "");
         } else {
           const live  = events.filter(e => now >= e.s && now < e.e);
           const stage = live.filter(e => !e.booth);
@@ -873,7 +873,7 @@
             const when = (next.date === todayKST(now) ? "" : dayLabel(next.date) + " ") + next.start;
             html += row("NEXT", "next", next.title, when);
           }
-          if (!html) html = row("TODAY", "dday", "오늘 일정이 모두 끝났어요", "");
+          if (!html) html = row("END", "dday", "일정이 모두 끝났어요! <br>내일 다시 만나요 :)", "");
         }
         banner.innerHTML = html;
 
