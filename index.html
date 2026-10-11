@@ -434,6 +434,127 @@
     @keyframes footer-pulse { 50% { transform: scale(1.07); } }
     /* 맨 위로 버튼은 푸터 위로 */
     #toTop { bottom: calc(var(--footer-h) + env(safe-area-inset-bottom) + 14px); }
+    /* ======================= 이스터에그 ======================= */
+    /* ===== 최하단 BAEKYA 버튼 (평소엔 그냥 로고처럼 보임) ===== */
+    .egg-btn {
+      display: block;
+      border: none;
+      background: none;
+      padding: 0;
+      margin-top: auto;        /* 기존 로고처럼 배경 맨 아래쪽으로 */
+      margin-bottom: 40px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;   /* 빠르게 연타해도 화면 확대 안 되게 */
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    /* 본문 사진 스타일(둥근 모서리·그림자·위 여백)이 로고에 안 붙게 덮어쓰기 */
+    .content .egg-btn img {
+      display: block;
+      width: 250px;            /* 로고 크기 — 기존과 동일 */
+      max-width: 100%;
+      height: auto;
+      margin-top: 0;
+      border-radius: 0;
+      box-shadow: none;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+    /* 누를 때마다 톡 튀는 반응 */
+    .egg-btn.bump { animation: bump 0.18s ease; }
+    @keyframes bump {
+      50% { transform: scale(0.92) rotate(-3deg); }
+    }
+    /* 거의 다 왔을 때(7번 이상) 살짝 흔들림 — 힌트 */
+    .egg-btn.shake { animation: shake 0.25s ease; }
+    @keyframes shake {
+      25% { transform: translateX(-4px) rotate(-2deg); }
+      75% { transform: translateX(4px)  rotate(2deg); }
+    }
+
+    /* ===== 이스터에그 팝업 ===== */
+    #eggModal {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(40, 10, 40, 0.55);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s;
+    }
+    #eggModal.open { opacity: 1; visibility: visible; }
+    .egg-card {
+      position: relative;
+      width: 100%;
+      max-width: 340px;
+      padding: 32px 24px 24px;
+      border-radius: 24px;
+      background: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+      transform: scale(0.6) rotate(-6deg);
+      transition: transform 0.45s cubic-bezier(.3, 1.6, .5, 1);
+    }
+    #eggModal.open .egg-card { transform: scale(1) rotate(0deg); }
+    .egg-card .egg-icon {
+      width: 88px;
+      height: 88px;
+      margin: -76px auto 12px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .egg-card .egg-icon img { width: 100%; height: 100%; object-fit: contain; }
+    .egg-card h2 {
+      font-size: 22px;
+      color: #ff5c93;
+      margin-bottom: 10px;
+    }
+    .egg-card p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #444;
+      word-break: keep-all;
+    }
+    .egg-card .egg-close {
+      margin-top: 20px;
+      width: 100%;
+      padding: 13px 0;
+      border: none;
+      border-radius: 999px;
+      background: #ff5c93;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* 팝업 뜰 때 터지는 꽃가루 */
+    .confetti {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 14px;
+      border-radius: 3px;
+      z-index: 10002;
+      pointer-events: none;
+      animation: confetti-fly 1.2s cubic-bezier(.2, .7, .4, 1) forwards;
+    }
+    @keyframes confetti-fly {
+      0%   { transform: translate(-50%, -50%) rotate(0); opacity: 1; }
+      100% { transform: translate(var(--x), var(--y)) rotate(var(--r)); opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -469,7 +590,10 @@
         <img class="map-thumb" id="mapThumb" src="지도.png" alt="지도 (누르면 크게 보기)">
         <button class="map-btn" id="mapBtn" type="button">상세지도 보기</button>
       </div>
-      <img class="logo" src="로고.png" alt="학교 로고">
+      <!-- 맨 아래 로고 = 이스터에그 버튼 (5초 안에 10번 누르면 팝업) -->
+      <button class="egg-btn" id="eggBtn" type="button" aria-label="BAEKYA">
+        <img src="로고.png" alt="BAEKYA">
+      </button>
     </main>
   </div>
 
@@ -618,7 +742,7 @@
     <a class="footer-arrow js-insta" href="#" target="_blank" rel="noopener">참여하기 →</a>
   </footer>
   <script>
-    const INSTA_URL = "https://www.instagram.com/p/Dd59pw9EoLW/";   // ← 여기에 총학생회 인스타(이벤트 게시물) 링크 넣기
+    const INSTA_URL = "https://www.instagram.com/p/DcxVCeHkkIb/?utm_source=ig_web_copy_link&stkn=NTc4MTIwNjQ2YQ==";   // ← 여기에 총학생회 인스타(이벤트 게시물) 링크 넣기
     document.querySelectorAll(".js-insta").forEach(a => a.href = INSTA_URL);
   </script>
 
@@ -706,6 +830,80 @@
       window.addEventListener("scroll", onScroll, { passive: true });
       onScroll();
       toTop.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+    })();
+  </script>
+
+  <!-- ===== 이스터에그 팝업 (내용은 여기서 바꾸면 돼요) ===== -->
+  <div id="eggModal" role="dialog" aria-modal="true" aria-labelledby="eggTitle">
+    <div class="egg-card">
+      <div class="egg-icon"><img src="캐릭터.png" alt=""></div>
+      <h2 id="eggTitle">이스터에그 발견!</h2>
+      <p>
+        백야를 10번이나 눌러준 당신,<br>
+        진정한 양지대동제 고인물 인정 👏<br>
+        <br>
+        [제작자: 지도부장 이태인]
+      </p>
+      <button class="egg-close" id="eggClose" type="button">닫기</button>
+    </div>
+  </div>
+
+  <script>
+    // ===== 이스터에그 설정 =====
+    const EGG_TAPS   = 10;     // 몇 번 눌러야 하는지
+    const EGG_WINDOW = 5000;   // 몇 초 안에 (밀리초, 5000 = 5초)
+    // ==========================
+
+    (function () {
+      const btn   = document.getElementById("eggBtn");
+      const modal = document.getElementById("eggModal");
+      let taps = [];
+
+      btn.addEventListener("click", () => {
+        const now = Date.now();
+        taps = taps.filter(t => now - t < EGG_WINDOW);   // 5초 지난 클릭은 버림
+        taps.push(now);
+
+        // 누를 때마다 반응 (7번째부터는 흔들림 힌트)
+        btn.classList.remove("bump", "shake");
+        void btn.offsetWidth;
+        btn.classList.add(taps.length >= EGG_TAPS - 3 ? "shake" : "bump");
+
+        if (taps.length >= EGG_TAPS) {
+          taps = [];
+          openEgg();
+        }
+      });
+
+      function openEgg() {
+        modal.classList.add("open");
+        document.body.style.overflow = "hidden";
+        burst();
+      }
+      function closeEgg() {
+        modal.classList.remove("open");
+        document.body.style.overflow = "";
+      }
+      document.getElementById("eggClose").addEventListener("click", closeEgg);
+      modal.addEventListener("click", e => { if (e.target === modal) closeEgg(); });
+      document.addEventListener("keydown", e => { if (e.key === "Escape") closeEgg(); });
+
+      // 꽃가루 효과
+      function burst() {
+        const colors = ["#ff5c93", "#ff8fb3", "#a78bfa", "#7cc96b", "#ffd166", "#5ec8f2"];
+        for (let i = 0; i < 40; i++) {
+          const c = document.createElement("span");
+          c.className = "confetti";
+          const angle = Math.random() * Math.PI * 2;
+          const dist  = 140 + Math.random() * 180;
+          c.style.background = colors[i % colors.length];
+          c.style.setProperty("--x", `calc(-50% + ${Math.cos(angle) * dist}px)`);
+          c.style.setProperty("--y", `calc(-50% + ${Math.sin(angle) * dist}px)`);
+          c.style.setProperty("--r", (Math.random() * 720 - 360) + "deg");
+          document.body.appendChild(c);
+          setTimeout(() => c.remove(), 1300);
+        }
+      }
     })();
   </script>
 
