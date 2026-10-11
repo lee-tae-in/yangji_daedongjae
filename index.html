@@ -461,6 +461,76 @@
       pointer-events: none;
       -webkit-user-drag: none;
     }
+    /* 로고 글자 반짝임: 글자 모양 그대로 빛이 스르륵 지나감 + 은은한 빛 */
+    .egg-btn { position: relative; }
+    .egg-btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.75) 50%, transparent 60%);
+      background-size: 250% 100%;
+      background-position: 150% 0;
+      -webkit-mask: url("로고.png") center / 100% 100% no-repeat;   /* 글자 모양에만 빛이 보이게 */
+              mask: url("로고.png") center / 100% 100% no-repeat;
+      animation: logo-shine 3s ease-in-out infinite;
+    }
+    @keyframes logo-shine {
+      0%, 55% { background-position: 150% 0; }
+      100%    { background-position: -50% 0; }
+    }
+    .content .egg-btn img { animation: logo-glow 3s ease-in-out infinite; }
+    @keyframes logo-glow {
+      0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)); }
+      50%      { filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 12px rgba(190, 150, 255, 0.6)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .egg-btn::after, .content .egg-btn img { animation: none; }
+    }
+
+    /* 후광: 로고 뒤에서 은은하게 숨쉬는 빛 + 천천히 도는 빛줄기 */
+    .egg-btn { isolation: isolate; }
+    .egg-halo {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 150%;
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+      pointer-events: none;
+      border-radius: 50%;
+      background: radial-gradient(circle,
+        rgba(250, 245, 255, 0.98) 0%,
+        rgba(236, 222, 255, 0.82) 22%,
+        rgba(200, 170, 255, 0.55) 42%,
+        rgba(220, 175, 240, 0.24) 58%,
+        transparent 70%);
+      filter: blur(4px);
+      animation: halo-breathe 3s ease-in-out infinite;
+    }
+    .egg-rays {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: repeating-conic-gradient(
+        rgba(245, 235, 255, 0.62) 0deg 6deg,
+        transparent 6deg 22deg);
+      -webkit-mask: radial-gradient(circle, transparent 18%, #000 32%, transparent 68%);
+              mask: radial-gradient(circle, transparent 18%, #000 32%, transparent 68%);
+      animation: halo-spin 24s linear infinite;
+    }
+    /* --halo-ratio: 세로 납작한 정도 (1 = 동그라미, 작을수록 납작한 타원) */
+    .egg-halo { --halo-ratio: 0.55; transform: translate(-50%, -50%) scale(1, var(--halo-ratio)); }
+    @keyframes halo-breathe {
+      0%, 100% { opacity: 0.65; transform: translate(-50%, -50%) scale(0.92, calc(0.92 * var(--halo-ratio))); }
+      50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.05, calc(1.05 * var(--halo-ratio))); }
+    }
+    @keyframes halo-spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .egg-halo, .egg-rays { animation: none; }
+    }
+
     /* 누를 때마다 톡 튀는 반응 */
     .egg-btn.bump { animation: bump 0.18s ease; }
     @keyframes bump {
@@ -590,8 +660,9 @@
         <img class="map-thumb" id="mapThumb" src="지도.png" alt="지도 (누르면 크게 보기)">
         <button class="map-btn" id="mapBtn" type="button">상세지도 보기</button>
       </div>
-      <!-- 맨 아래 로고 = 이스터에그 버튼 (5초 안에 10번 누르면 팝업) -->
+      <!-- 맨 아래 로고 = 이스터에그 버튼 (5초 안에 5번 누르면 팝업) -->
       <button class="egg-btn" id="eggBtn" type="button" aria-label="BAEKYA">
+        <span class="egg-halo" aria-hidden="true"><span class="egg-rays"></span></span>
         <img src="로고.png" alt="BAEKYA">
       </button>
     </main>
@@ -839,7 +910,7 @@
       <div class="egg-icon"><img src="캐릭터.png" alt=""></div>
       <h2 id="eggTitle">이스터에그 발견!</h2>
       <p>
-        백야를 10번이나 눌러준 당신,<br>
+        백야를 5번이나 눌러준 당신,<br>
         진정한 양지대동제 고인물 인정 👏<br>
         <br>
         [제작자: 지도부장 이태인]
@@ -850,7 +921,7 @@
 
   <script>
     // ===== 이스터에그 설정 =====
-    const EGG_TAPS   = 10;     // 몇 번 눌러야 하는지
+    const EGG_TAPS   = 5;      // 몇 번 눌러야 하는지
     const EGG_WINDOW = 5000;   // 몇 초 안에 (밀리초, 5000 = 5초)
     // ==========================
 
@@ -864,10 +935,10 @@
         taps = taps.filter(t => now - t < EGG_WINDOW);   // 5초 지난 클릭은 버림
         taps.push(now);
 
-        // 누를 때마다 반응 (7번째부터는 흔들림 힌트)
+        // 누를 때마다 반응 (마지막 2번은 흔들림 힌트)
         btn.classList.remove("bump", "shake");
         void btn.offsetWidth;
-        btn.classList.add(taps.length >= EGG_TAPS - 3 ? "shake" : "bump");
+        btn.classList.add(taps.length >= EGG_TAPS - 2 ? "shake" : "bump");
 
         if (taps.length >= EGG_TAPS) {
           taps = [];
