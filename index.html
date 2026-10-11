@@ -479,56 +479,49 @@
       0%, 55% { background-position: 150% 0; }
       100%    { background-position: -50% 0; }
     }
-    .content .egg-btn img { animation: logo-glow 3s ease-in-out infinite; }
-    @keyframes logo-glow {
-      0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)); }
-      50%      { filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 12px rgba(190, 150, 255, 0.6)); }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .egg-btn::after, .content .egg-btn img { animation: none; }
+    /* 네온사인: 글자 테두리를 따라 빛나는 네온 + 가끔 지직 깜빡임 */
+    .content .egg-btn img { animation: neon-flicker 4s linear infinite; }
+    @keyframes neon-flicker {
+      0%, 18%, 22%, 25%, 53%, 57%, 100% {
+        filter:
+          drop-shadow(0 0 1px #ffffff)
+          drop-shadow(0 0 3px #f3dcff)
+          drop-shadow(0 0 7px #c58bff)
+          drop-shadow(0 0 14px #b56bff);
+      }
+      20%, 24%, 55% {            /* 네온 특유의 짧은 깜빡임 */
+        filter:
+          drop-shadow(0 0 1px rgba(255, 255, 255, 0.4))
+          drop-shadow(0 0 3px rgba(197, 139, 255, 0.3));
+      }
     }
 
-    /* 후광: 로고 뒤에서 은은하게 숨쉬는 빛 + 천천히 도는 빛줄기 */
-    .egg-btn { isolation: isolate; }
-    .egg-halo {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 150%;
-      aspect-ratio: 1;
-      transform: translate(-50%, -50%);
-      z-index: -1;
-      pointer-events: none;
-      border-radius: 50%;
-      background: radial-gradient(circle,
-        rgba(250, 245, 255, 0.98) 0%,
-        rgba(236, 222, 255, 0.82) 22%,
-        rgba(200, 170, 255, 0.55) 42%,
-        rgba(220, 175, 240, 0.24) 58%,
-        transparent 70%);
-      filter: blur(4px);
-      animation: halo-breathe 3s ease-in-out infinite;
-    }
-    .egg-rays {
+    /* 글자 테두리에서 반짝이는 별 (위치는 스크립트가 글자 가장자리로 자동 배치) */
+    .egg-sparkles {
       position: absolute;
       inset: 0;
-      border-radius: 50%;
-      background: repeating-conic-gradient(
-        rgba(245, 235, 255, 0.62) 0deg 6deg,
-        transparent 6deg 22deg);
-      -webkit-mask: radial-gradient(circle, transparent 18%, #000 32%, transparent 68%);
-              mask: radial-gradient(circle, transparent 18%, #000 32%, transparent 68%);
-      animation: halo-spin 24s linear infinite;
+      z-index: 2;
+      pointer-events: none;
     }
-    /* --halo-ratio: 세로 납작한 정도 (1 = 동그라미, 작을수록 납작한 타원) */
-    .egg-halo { --halo-ratio: 0.55; transform: translate(-50%, -50%) scale(1, var(--halo-ratio)); }
-    @keyframes halo-breathe {
-      0%, 100% { opacity: 0.65; transform: translate(-50%, -50%) scale(0.92, calc(0.92 * var(--halo-ratio))); }
-      50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.05, calc(1.05 * var(--halo-ratio))); }
+    .egg-sparkle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      margin: -6px 0 0 -6px;     /* 별 중심을 점 위치에 맞춤 */
+      background: radial-gradient(circle, #ffffff 0%, #ffffff 30%, #f1ddff 55%, transparent 70%);
+      clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+      filter: drop-shadow(0 0 3px #d9a8ff);
+      opacity: 0;
+      animation: sparkle-twinkle 1.8s ease-in-out infinite;
     }
-    @keyframes halo-spin { to { transform: rotate(360deg); } }
+    @keyframes sparkle-twinkle {
+      0%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+      45%      { opacity: 1; transform: scale(1.15) rotate(45deg); }
+      70%      { opacity: 0.6; transform: scale(0.7) rotate(70deg); }
+    }
     @media (prefers-reduced-motion: reduce) {
-      .egg-halo, .egg-rays { animation: none; }
+      .egg-btn::after, .content .egg-btn img, .egg-sparkle { animation: none; }
+      .content .egg-btn img { filter: drop-shadow(0 0 6px #c58bff); }
     }
 
     /* 누를 때마다 톡 튀는 반응 */
@@ -662,8 +655,8 @@
       </div>
       <!-- 맨 아래 로고 = 이스터에그 버튼 (5초 안에 5번 누르면 팝업) -->
       <button class="egg-btn" id="eggBtn" type="button" aria-label="BAEKYA">
-        <span class="egg-halo" aria-hidden="true"><span class="egg-rays"></span></span>
         <img src="로고.png" alt="BAEKYA">
+        <span class="egg-sparkles" aria-hidden="true"></span>
       </button>
     </main>
   </div>
@@ -958,6 +951,53 @@
       document.getElementById("eggClose").addEventListener("click", closeEgg);
       modal.addEventListener("click", e => { if (e.target === modal) closeEgg(); });
       document.addEventListener("keydown", e => { if (e.key === "Escape") closeEgg(); });
+
+      // ===== 글자 테두리 반짝이 =====
+      const SPARKLE_COUNT = 14;   // 반짝이 개수
+      const logoImg  = btn.querySelector("img");
+      const sparkBox = btn.querySelector(".egg-sparkles");
+      let edgePoints = [];         // 글자 가장자리 좌표 (0~1 비율)
+
+      function findEdges() {
+        try {
+          const W = 200, H = Math.round(W * logoImg.naturalHeight / logoImg.naturalWidth);
+          const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+          const cx = cv.getContext("2d"); cx.drawImage(logoImg, 0, 0, W, H);
+          const a = cx.getImageData(0, 0, W, H).data;
+          const solid = (x, y) => x >= 0 && y >= 0 && x < W && y < H && a[(y * W + x) * 4 + 3] > 128;
+          for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+            if (solid(x, y) && (!solid(x+1, y) || !solid(x-1, y) || !solid(x, y+1) || !solid(x, y-1)))
+              edgePoints.push([x / W, y / H]);
+          }
+        } catch (e) { edgePoints = []; }   // 파일을 그냥 더블클릭해서 열면 여기로 옴 → 랜덤 위치 사용
+      }
+      function randomSpot() {
+        if (edgePoints.length) return edgePoints[Math.floor(Math.random() * edgePoints.length)];
+        return [0.05 + Math.random() * 0.9, 0.1 + Math.random() * 0.8];
+      }
+      function placeSparkle(el) {
+        const [x, y] = randomSpot();
+        el.style.left = (x * 100) + "%";
+        el.style.top  = (y * 100) + "%";
+        const size = 8 + Math.random() * 8;
+        el.style.width = el.style.height = size + "px";
+        el.style.margin = (-size / 2) + "px 0 0 " + (-size / 2) + "px";
+      }
+      function makeSparkles() {
+        findEdges();
+        for (let i = 0; i < SPARKLE_COUNT; i++) {
+          const s = document.createElement("span");
+          s.className = "egg-sparkle";
+          placeSparkle(s);
+          const dur = 1.4 + Math.random() * 1.2;
+          s.style.animationDuration = dur + "s";
+          s.style.animationDelay = -(Math.random() * dur) + "s";
+          s.addEventListener("animationiteration", () => placeSparkle(s));   // 깜빡일 때마다 자리 이동
+          sparkBox.appendChild(s);
+        }
+      }
+      if (logoImg.complete && logoImg.naturalWidth) makeSparkles();
+      else logoImg.addEventListener("load", makeSparkles, { once: true });
 
       // 꽃가루 효과
       function burst() {
