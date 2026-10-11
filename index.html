@@ -826,7 +826,7 @@
       { date: "2026-10-16", start: "20:00", end: "20:30", title: "🎤 더윈드" },
       { date: "2026-10-16", start: "20:30", end: "21:00", title: "🎤 최유정" },
       { date: "2026-10-16", start: "21:00", end: "21:30", title: "🎤 사이먼 도미닉" },
-      { date: "2026-10-16", start: "21:30", end: "22:00", title: "DJ PARTY: <br>PLAY Y2K" }
+      { date: "2026-10-16", start: "21:30", end: "22:00", title: "디제이 공연 : <br>DJ 클럽파티" }
     ];
     // =====================================================
 
@@ -866,7 +866,7 @@
             html += row('<span class="dot"></span>NOW', "", e.title, "~ " + e.end);
           });
           // 다음 일정: 부스가 이미 열려 있으면 공연 위주로, 아니면 가장 빠른 일정
-          const upcoming = events.filter(e => e.s > now);
+          const upcoming = events.filter(e => e.s > now && e.date === todayKST(now));   // 다음날 행사는 NEXT에 안 띄움
           const boothOpen = live.some(e => e.booth);
           const next = (boothOpen ? upcoming.filter(e => !e.booth)[0] : null) || upcoming[0];
           if (next) {
