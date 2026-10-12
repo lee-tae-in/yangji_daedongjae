@@ -539,6 +539,95 @@
       75% { transform: translateX(4px)  rotate(2deg); }
     }
 
+    /* ===== 우측 중앙 떠다니는 버튼 ===== */
+    #floatBtn {
+      position: fixed;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 55;
+      width: 60px;
+      height: 60px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff8fb3, #a78bfa);
+      color: #fff;
+      font-size: 28px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transform: translateY(-50%);   /* 기본 위치 (JS가 스크롤 따라 흔들어줌) */
+      will-change: transform;
+    }
+    #floatBtn::before {   /* 주변에 퍼지는 링 (눈에 띄게) */
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 143, 179, 0.7);
+      animation: float-ring 2s ease-out infinite;
+      pointer-events: none;
+    }
+    @keyframes float-bob {
+      0%, 100% { transform: translateY(-50%); }
+      50%      { transform: translateY(calc(-50% - 9px)); }
+    }
+    @keyframes float-ring {
+      0%   { transform: scale(1);   opacity: 0.7; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #floatBtn, #floatBtn::before { animation: none; }
+    }
+
+    /* 떠다니는 버튼 팝업 */
+    #floatModal {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(40, 10, 40, 0.55);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.25s ease, visibility 0.25s;
+    }
+    #floatModal.open { opacity: 1; visibility: visible; }
+    #floatModal .float-card {
+      position: relative;
+      width: 100%;
+      max-width: 340px;
+      padding: 28px 24px 24px;
+      border-radius: 24px;
+      background: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+      transform: scale(0.7);
+      transition: transform 0.35s cubic-bezier(.3, 1.6, .5, 1);
+    }
+    #floatModal.open .float-card { transform: scale(1); }
+    #floatModal .float-card h2 { font-size: 22px; color: #ff5c93; margin-bottom: 12px; }
+    #floatModal .float-card p  { font-size: 15px; line-height: 1.6; color: #444; word-break: keep-all; }
+    #floatModal .float-card .float-close {
+      margin-top: 20px;
+      width: 100%;
+      padding: 13px 0;
+      border: none;
+      border-radius: 999px;
+      background: #ff5c93;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
     /* ===== 이스터에그 팝업 ===== */
     #eggModal {
       position: fixed;
@@ -811,6 +900,51 @@
   <script>
     const INSTA_URL = "https://www.instagram.com/p/Dd59pw9EoLW/";   // ← 여기에 총학생회 인스타(이벤트 게시물) 링크 넣기
     document.querySelectorAll(".js-insta").forEach(a => a.href = INSTA_URL);
+  </script>
+
+  <!-- 우측 중앙 떠다니는 버튼 → 인스타 게시물로 이동 (링크는 href만 바꾸면 돼요) -->
+  <a id="floatBtn" href="https://www.instagram.com/p/DeMknB1EnWc/" target="_blank" rel="noopener" aria-label="인스타그램 바로가기">📸</a>
+  <script>
+    // 떠다니는 아이콘: 낮에만 표시 + 평소 둥둥 + 스크롤하면 살짝 뒤따라오다 제자리로
+    (function () {
+      const btn = document.getElementById("floatBtn");
+      if (!btn) return;
+
+      // ===== 낮에만 보이기 (이 시간 사이에만 아이콘 표시) =====
+      const SHOW_START = "10:00";   // 이 시각부터 보임
+      const SHOW_END   = "16:00";   // 이 시각부터 사라짐
+      // =====================================================
+      const testNow = new URLSearchParams(location.search).get("now");  // 테스트용 ?now=
+      const kstMin = () => {
+        const base = testNow ? new Date(testNow + "+09:00") : new Date();
+        const k = new Date(base.getTime() + 9 * 3600e3);
+        return k.getUTCHours() * 60 + k.getUTCMinutes();
+      };
+      const toMin = t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+      function updateVis() {
+        const m = kstMin();
+        btn.style.display = (m >= toMin(SHOW_START) && m < toMin(SHOW_END)) ? "flex" : "none";
+      }
+      updateVis();
+      setInterval(updateVis, 60000);   // 1분마다 확인
+
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) { btn.style.transform = "translateY(-50%)"; return; }
+      let target = 0, drift = 0, vel = 0, lastY = window.scrollY, t0 = performance.now();
+      window.addEventListener("scroll", () => {
+        const d = window.scrollY - lastY; lastY = window.scrollY;
+        target += d * 0.4;
+        if (target > 70) target = 70; if (target < -70) target = -70;
+      }, { passive: true });
+      function tick(now) {
+        target *= 0.9;                         // 스크롤 멈추면 가운데로 복귀
+        vel = (vel + (target - drift) * 0.1) * 0.72;   // 스프링 + 감쇠
+        drift += vel;
+        const bob = Math.sin((now - t0) / 650) * 6;    // 평소 둥둥
+        btn.style.transform = "translateY(calc(-50% + " + (drift + bob).toFixed(2) + "px))";
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
   </script>
 
   <!-- 맨 위로 버튼 -->
