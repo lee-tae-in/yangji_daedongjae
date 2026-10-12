@@ -820,12 +820,19 @@
     // ===== 축제 일정 (시간 바뀌면 여기만 고치면 돼요) =====
     const SCHEDULE = [
       { date: "2026-10-15", start: "10:30", end: "22:00", title: "학과부스 · 푸드트럭", booth: true },
-      { date: "2026-10-15", start: "18:00", end: "20:20", title: "동아리 · 학과 공연" },
-      { date: "2026-10-15", start: "20:20", end: "20:50", title: "🎤 려진" },
+      { date: "2026-10-15", start: "18:00", end: "18:30", title: "동아리 공연 : <br>오선지" },
+      { date: "2026-10-15", start: "18:30", end: "18:55", title: "동아리 공연 : <br>씨엘" },
+      { date: "2026-10-15", start: "18:55", end: "19:15", title: "동아리 공연 : <br>리베라" },
+      { date: "2026-10-15", start: "19:15", end: "19:35", title: "동아리 공연 : <br>항공과" },
+      { date: "2026-10-15", start: "19:35", end: "20:00", title: "동아리 공연 : <br>KPOP과" },
+      { date: "2026-10-15", start: "20:10", end: "20:50", title: "🎤 려진" },
       { date: "2026-10-15", start: "20:50", end: "21:30", title: "🎤 키드밀리" },
       { date: "2026-10-15", start: "21:30", end: "22:00", title: "🎤 키스오브라이프" },
       { date: "2026-10-16", start: "10:30", end: "22:00", title: "학과부스 · 푸드트럭", booth: true },
-      { date: "2026-10-16", start: "18:00", end: "20:00", title: "연성 가요대전 : <br>PLAY YOUR VOICE" },
+      { date: "2026-10-16", start: "18:00", end: "18:40", title: "연성 가요대전 1부" },
+      { date: "2026-10-16", start: "18:40", end: "19:00", title: "KPOP과 공연" },
+      { date: "2026-10-16", start: "19:00", end: "19:40", title: "연성 가요대전 2부" },
+      { date: "2026-10-16", start: "19:40", end: "20:00", title: "연성 가요대전 시상식" },
       { date: "2026-10-16", start: "20:00", end: "20:30", title: "🎤 더윈드" },
       { date: "2026-10-16", start: "20:30", end: "21:00", title: "🎤 최유정" },
       { date: "2026-10-16", start: "21:00", end: "21:30", title: "🎤 사이먼 도미닉" },
@@ -863,8 +870,11 @@
           html = row("END", "next", "양지대동제가 끝났어요. <br>함께해줘서 고마워요!", "");
         } else {
           const live  = events.filter(e => now >= e.s && now < e.e);
-          const stage = live.filter(e => !e.booth);
-          const shown = stage.length ? stage : live;
+          const stageLive = live.filter(e => !e.booth);
+          // 오늘 공연이 한 번이라도 시작했으면, 공연 사이 빈 시간엔 NOW를 안 띄움 (NEXT만)
+          const todayStr = todayKST(now);
+          const perfStarted = events.some(e => !e.booth && e.date === todayStr && now >= e.s);
+          const shown = stageLive.length ? stageLive : (perfStarted ? [] : live);
           shown.forEach(e => {
             html += row('<span class="dot"></span>NOW', "", e.title, "~ " + e.end);
           });
